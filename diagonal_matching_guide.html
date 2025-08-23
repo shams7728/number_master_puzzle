@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagonal Matching Rules - Visual Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .rules-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            gap: 3px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .active {
+            background: #3498db;
+            color: white;
+        }
+
+        .matched {
+            background: #95a5a6;
+            color: #7f8c8d;
+            border-color: #bdc3c7;
+        }
+
+        .highlight-match {
+            background: #e74c3c !important;
+            color: white !important;
+            animation: pulse 1s infinite;
+        }
+
+        .highlight-path {
+            background: #f39c12 !important;
+            color: white !important;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .example-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .example {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .valid {
+            border-left: 5px solid #27ae60;
+        }
+
+        .invalid {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .status {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .explanation {
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .implementation-box {
+            background: #2c3e50;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .code-snippet {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .rule-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rule-list li {
+            background: #ecf0f1;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-cell {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            border: 2px solid #34495e;
+        }
+
+        .path-visualization {
+            position: relative;
+            margin: 40px 0;
+        }
+
+        .diagonal-line {
+            position: absolute;
+            background: #e74c3c;
+            height: 3px;
+            transform-origin: left center;
+            z-index: 10;
+            border-radius: 2px;
+        }
+
+        .arrow {
+            position: absolute;
+            right: -10px;
+            top: -5px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #e74c3c;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Diagonal Matching Rules</h1>
+        <p class="subtitle">Enhanced Number Puzzle Game Mechanics</p>
+
+        <div class="rules-summary">
+            <h2>📋 Core Rules Summary</h2>
+            <ul class="rule-list">
+                <li><strong>Diagonal Matching Allowed:</strong> Numbers can be matched diagonally across the grid</li>
+                <li><strong>No Adjacency Requirement:</strong> Diagonal matches work at any distance, not just adjacent cells</li>
+                <li><strong>Path Through Matched Cells:</strong> Can match through already-solved (dull/faded) cells</li>
+                <li><strong>Clear Path Requirement:</strong> All intermediate cells along diagonal must be already matched</li>
+                <li><strong>Standard Rules Apply:</strong> Numbers must be equal OR sum to 10, both cells must be active</li>
+            </ul>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-cell active"></div>
+                <span>Active Cell</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-cell matched"></div>
+                <span>Matched Cell</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-cell highlight-match"></div>
+                <span>Matching Cells</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-cell highlight-path"></div>
+                <span>Path Cells</span>
+            </div>
+        </div>
+
+        <div class="example-container">
+            <div class="example valid">
+                <div class="status">✅ VALID MATCH</div>
+                <h3>Near Diagonal (Adjacent)</h3>
+                <div class="grid" id="grid1">
+                    <div class="cell highlight-match">5</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">8</div>
+                    <div class="cell highlight-match">5</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">6</div>
+                    <div class="cell active">4</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">8</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">6</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">4</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">8</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">1</div>
+                </div>
+                <div class="explanation">
+                    <strong>[0,0] matches [1,1]:</strong> Both contain 5, adjacent diagonal cells with no obstacles.
+                </div>
+            </div>
+
+            <div class="example valid">
+                <div class="status">✅ VALID MATCH</div>
+                <h3>Far Diagonal Through Matched</h3>
+                <div class="grid" id="grid2">
+                    <div class="cell highlight-match">3</div>
+                    <div class="cell active">8</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">4</div>
+                    <div class="cell highlight-path matched">6</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">8</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">2</div>
+                    <div class="cell highlight-path matched">4</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">6</div>
+                    <div class="cell active">8</div>
+                    <div class="cell highlight-match">7</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">4</div>
+                </div>
+                <div class="explanation">
+                    <strong>[0,0] matches [3,3]:</strong> 3+7=10, diagonal path through matched cells [1,1] and [2,2].
+                </div>
+            </div>
+        </div>
+
+        <div class="example-container">
+            <div class="example invalid">
+                <div class="status">❌ INVALID MATCH</div>
+                <h3>Blocked Diagonal Path</h3>
+                <div class="grid" id="grid3">
+                    <div class="cell highlight-match">4</div>
+                    <div class="cell active">8</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active" style="background: #e74c3c !important; color: white;">5</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">8</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">2</div>
+                    <div class="cell matched">3</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">6</div>
+                    <div class="cell active">8</div>
+                    <div class="cell highlight-match">6</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">4</div>
+                    <div class="cell active">7</div>
+                </div>
+                <div class="explanation">
+                    <strong>[0,0] CANNOT match [3,3]:</strong> 4+6=10 but [1,1] is still active, blocking the diagonal path.
+                </div>
+            </div>
+
+            <div class="example invalid">
+                <div class="status">❌ INVALID MATCH</div>
+                <h3>Multiple Blocks in Path</h3>
+                <div class="grid" id="grid4">
+                    <div class="cell highlight-match">2</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">6</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active" style="background: #e74c3c !important; color: white;">4</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">7</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">6</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active" style="background: #e74c3c !important; color: white;">9</div>
+                    <div class="cell active">2</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">8</div>
+                    <div class="cell active">4</div>
+                    <div class="cell active">7</div>
+                    <div class="cell highlight-match">8</div>
+                    <div class="cell active">3</div>
+                    <div class="cell active">1</div>
+                    <div class="cell active">6</div>
+                    <div class="cell active">9</div>
+                    <div class="cell active">5</div>
+                    <div class="cell active">2</div>
+                </div>
+                <div class="explanation">
+                    <strong>[0,0] CANNOT match [3,3]:</strong> 2+8=10 but both [1,1] and [2,2] are active, blocking the path.
+                </div>
+            </div>
+        </div>
+
+        <div class="path-visualization">
+            <h2>🛤️ Path Validation Logic</h2>
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="display: inline-block; position: relative;">
+                    <div class="grid" style="margin: 0;">
+                        <div class="cell" style="background: #e74c3c; color: white;">A</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell matched">✓</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell matched">✓</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell" style="background: #e74c3c; color: white;">B</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                        <div class="cell active">•</div>
+                    </div>
+                    <div class="diagonal-line" style="
+                        left: 25px; 
+                        top: 25px; 
+                        width: 212px; 
+                        transform: rotate(45deg);
+                    ">
+                        <div class="arrow"></div>
+                    </div>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 30px;">
+                <strong>Diagonal Path Check:</strong> From A[0,0] to B[3,3], validate that [1,1] and [2,2] are both matched (✓).
+            </p>
+        </div>
+
+        <div class="implementation-box">
+            <h2>⚙️ Implementation Guide</h2>
+            <p>Key updates needed for the <code>_areCellsConnected()</code> method:</p>
+            
+            <div class="code-snippet">
+// Pseudo-code for diagonal path validation
+function isDiagonalPathClear(fromRow, fromCol, toRow, toCol) {
+    const rowStep = toRow > fromRow ? 1 : -1;
+    const colStep = toCol > fromCol ? 1 : -1;
+    
+    // Check all intermediate cells along diagonal
+    let currentRow = fromRow + rowStep;
+    let currentCol = fromCol + colStep;
+    
+    while (currentRow !== toRow && currentCol !== toCol) {
+        if (isActive(currentRow, currentCol)) {
+            return false; // Path blocked by active cell
+        }
+        currentRow += rowStep;
+        currentCol += colStep;
+    }
+    
+    return true; // Path is clear
+}
+            </div>
+
+            <h3>🔧 Algorithm Steps:</h3>
+            <ol style="color: #ecf0f1;">
+                <li><strong>Detect Diagonal:</strong> Check if |rowDiff| === |colDiff| and both > 0</li>
+                <li><strong>Calculate Steps:</strong> Determine direction (+1 or -1) for row and column movement</li>
+                <li><strong>Iterate Path:</strong> Check each intermediate cell along the diagonal line</li>
+                <li><strong>Validate Status:</strong> Ensure all intermediate cells are already matched</li>
+                <li><strong>Return Result:</strong> Allow match only if entire path is clear</li>
+            </ol>
+
+            <div class="code-snippet">
+// Enhanced _areCellsConnected method structure
+_areCellsConnected(cell1, cell2) {
+    // Standard checks (both active, valid match)
+    if (!this._isValidMatch(cell1, cell2)) return false;
+    
+    const [r1, c1] = cell1.position;
+    const [r2, c2] = cell2.position;
+    
+    // Check horizontal/vertical paths (existing logic)
+    if (r1 === r2 || c1 === c2) {
+        return this._isHorizontalVerticalPathClear(r1, c1, r2, c2);
+    }
+    
+    // NEW: Check diagonal paths
+    if (Math.abs(r2 - r1) === Math.abs(c2 - c1)) {
+        return this._isDiagonalPathClear(r1, c1, r2, c2);
+    }
+    
+    return false; // No valid path found
+}
+            </div>
+        </div>
+
+        <div style="background: #f1f2f6; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h3 style="color: #2f3542; margin-bottom: 15px;">🎯 Expected Game Behavior</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div style="text-align: center;">
+                    <h4 style="color: #3742fa;">Horizontal/Vertical</h4>
+                    <p>Match through multiple matched cells in straight lines</p>
+                </div>
+                <div style="text-align: center;">
+                    <h4 style="color: #3742fa;">Diagonal</h4>
+                    <p>Match through multiple matched cells along diagonal paths</p>
+                </div>
+                <div style="text-align: center;">
+                    <h4 style="color: #3742fa;">All Matches</h4>
+                    <p>Equal numbers OR sum to 10 + clear path requirement</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add subtle animations and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const cells = document.querySelectorAll('.cell');
+            
+            cells.forEach(cell => {
+                cell.addEventListener('mouseenter', function() {
+                    if (this.classList.contains('highlight-match')) {
+                        this.style.transform = 'scale(1.1)';
+                        this.style.boxShadow = '0 5px 15px rgba(231, 76, 60, 0.4)';
+                    }
+                });
+                
+                cell.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
