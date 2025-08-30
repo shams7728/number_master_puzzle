@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentScore = 0;
   int _highScore = 0;
   bool _hasSavedGame = false;
+  bool _gameCompleted = false;
   bool _isLoading = true;
 
   @override
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentScore = prefs.getInt('current_score') ?? 0;
         _highScore = prefs.getInt('high_score') ?? 0;
         _hasSavedGame = prefs.getBool('has_saved_game') ?? false;
+        _gameCompleted = prefs.getBool('game_completed') ?? false;
         _isLoading = false;
       });
     } catch (e) {
@@ -42,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentScore = 0;
         _highScore = 0;
         _hasSavedGame = false;
+        _gameCompleted = false;
         _isLoading = false;
       });
     }
@@ -50,10 +53,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _startNewGame() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      // Clear all game data for fresh start
       await prefs.setInt('current_score', 0);
-      await prefs.setBool('has_saved_game', false);
       await prefs.setInt('current_level', 1);
-      await prefs.setInt('current_rows', 3);
+      await prefs.setInt('active_rows', 3);
+      await prefs.setInt('add_row_count', 4);
+      await prefs.setInt('hint_count', 5);
+      await prefs.setBool('has_saved_game', false);
+      await prefs.setBool('game_completed', false);
+
+      // Clear saved grid state
+      await prefs.remove('saved_grid');
+      await prefs.remove('saved_matched_cells');
+      await prefs.remove('saved_selected_row');
+      await prefs.remove('saved_selected_col');
 
       if (mounted) {
         Navigator.pushNamed(context, '/game-screen');
@@ -155,9 +169,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // Action Buttons
                           ActionButtonsWidget(
-                            hasSavedGame: _hasSavedGame,
+                            hasSavedGame: _hasSavedGame && !_gameCompleted,
                             onNewGame: _startNewGame,
-                            onResumeGame: _hasSavedGame ? _resumeGame : null,
+                            onResumeGame: (_hasSavedGame && !_gameCompleted)
+                                ? _resumeGame
+                                : null,
                           ),
 
                           SizedBox(height: 4.h),
